@@ -2,7 +2,7 @@
 
 total=$(free | grep Mem: | cut -d' ' -f11)
 used=$(free | grep Mem: | cut -d' ' -f18)
-opr=$(echo "scale=4;"$(($used / $total * 100))) 
+opr=$(echo "scale=4;(($used / $total * 100))" | bc -l | rev | cut -c3- | rev) 
 
 echo "#Architecture: $(uname -a)"
 echo "#CPU physical : $(nproc)"
