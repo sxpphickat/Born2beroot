@@ -1,16 +1,20 @@
 #!/bin/bash
 
-total=$(free | grep Mem: | cut -d' ' -f11)
-used=$(free | grep Mem: | cut -d' ' -f18)
-opr=$(echo "scale=4;(($used / $total * 100))" | bc -l | rev | cut -c3- | rev) 
+total=$(free | grep Mem: | awk '{print $2}')
+used=$(free | grep Mem: | awk '{print $3}')
+opr=$(echo | awk -v a=$used -v b=$total 'BEGIN {printf "%.2f" , a/b*100}')
 
 echo "#Architecture: $(uname -a)"
-echo "#CPU physical : $(nproc)"
+echo "#CPU physical : $(lscpu | grep Socket | wc -l)"
 echo "#vCPU : $(cat /proc/cpuinfo | grep processor | wc -l)"
-echo "#Memory Usage: $(free -h | grep Mem: | cut -d' ' -f20 | cut -d'M' -f1)/$(free -h | grep Mem: | cut -d' ' -f12 | cut -d'i' -f1)B ($opr%)"
-echo "#Disk Usage: $nval%"
-echo "#CPU load: $nval%"
-echo "#Last boot: $(who -d | cut -d' ' -f18) $(who -d | cut -d' ' -f19)"
+
+echo "#Memory Usage: $(free -m | grep Mem: | awk '{print $3}')/$(free -m | grep Mem: | awk '{print $2}')MB ($opr%)"
+
+echo "#Disk Usage: $(df -m --total | grep total | awk '{printf $3}')/$(df -h --total | grep total | awk '{printf $2}')b ($(df -h --total | grep total | awk '{print $5}'))"
+
+echo "#CPU load: $()%"
+
+echo "#Last boot: $(who -b | awk '{print $3,$4}')"
 zero=0
 if [ $(lvscan | grep ACTIVE | wc -l) -gt $zero ]
 then
@@ -18,8 +22,8 @@ then
 else
 	echo "#LVM use: no"
 fi
-echo "#Connections TCP : $(ss -s | grep TCP: | cut -d' ' -f4) ESTABLISHED"
+echo "#Connections TCP : $(ss -t | grep ESTAB | wc -l) ESTABLISHED"
 echo "#User log: $(who | wc -l)"
-echo "#Network: IP $(ip addr | grep global | cut -d' ' -f6 | cut -d'/' -f1) ($(ip addr | grep ether | cut -d' ' -f6))"
-echo "#Sudo : $(cat /var/log/sudo/sudo.log | grep COMMAND | wc -l) cmd"
+echo "#Network: IP $(hostname -I) ($(ip addr | grep ether | cut -d' ' -f6))"
+echo "#Sudo : $(journalctl _COMM=sudo | grep COMMAND | wc -l) cmd"
 
