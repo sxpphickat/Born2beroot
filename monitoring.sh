@@ -13,7 +13,7 @@ echo "#Memory Usage: $(free -m | grep Mem: | awk '{print $3}')/$(free -m | grep 
 echo "#Disk Usage: $(df -m --total | grep total | awk '{printf $3}')/$(df -h --total | grep total | awk '{printf $2}')b ($(df -h --total | grep total | awk '{print $5}'))"
 echo "#CPU load: $(awk -v l=$loud 'BEGIN {printf "%.1f", 100-l}')%"
 echo "#Last boot: $(who -b | awk '{print $3,$4}')"
-if [ $(lvscan | grep ACTIVE | wc -l) -gt $zero ]
+if [ $( /usr/sbin/lvscan | grep ACTIVE | wc -l) -gt $zero ]
 then
         echo "#LVM use: yes"
 else
